@@ -1,0 +1,35 @@
+name: Sync Docker Images to Alibaba Cloud from Docker Compose
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-images:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Log in to Alibaba Cloud ACR
+      run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
+
+    - name: Pull and push images to Alibaba Cloud ACR
+      run: |        
+        # Pull the image from DockerHub
+        $image=langfuse/langfuse:2
+        docker pull $image
+        
+        # Extract image tag (last part)
+        image_tag=$(echo $image | awk -F'/' '{print $NF}')
+        
+        # Tag the image for ACR
+        acr_image="${{ secrets.ACR_REGISTRY }}/linjicong/$image_tag"
+        echo "Tagging image: $acr_image"
+        docker tag $image $acr_image
+
+        docker rmi $image
+        
+        # Push the image to ACR
+        echo "Pushing image to ACR: $acr_image"
+        docker push $acr_image
+        docker rmi $acr_image
