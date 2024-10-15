@@ -16,7 +16,7 @@ jobs:
     - name: Pull and push images to Alibaba Cloud ACR
       run: |        
         # Pull the image from DockerHub
-        $image=langfuse/langfuse:2
+        $image="langfuse/langfuse:2"
         docker pull $image
         
         # Extract image tag (last part)
